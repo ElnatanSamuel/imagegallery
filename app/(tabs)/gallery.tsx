@@ -27,7 +27,7 @@ export default function GalleryScreen() {
   }, [isLoading, loadMore]);
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView className="flex-1 bg-gray-900">
       <SearchBar onSearch={handleSearch} />
       <ImageGrid
         images={images}

@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View, TouchableOpacity } from "react-native";
+import { TextInput, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
@@ -9,14 +9,13 @@ interface SearchBarProps {
 
 export function SearchBar({ onSearch }: SearchBarProps) {
   const [searchText, setSearchText] = useState("");
-  const [debouncedValue] = useDebounce(searchText, 300); // Reduced debounce time to 300ms
+  const [debouncedValue] = useDebounce(searchText, 300);
 
-  // Effect for debounced search
   useEffect(() => {
     if (debouncedValue.trim()) {
       onSearch(debouncedValue);
     } else if (debouncedValue === "") {
-      onSearch("nature"); // Default search when cleared
+      onSearch("nature");
     }
   }, [debouncedValue, onSearch]);
 
@@ -25,49 +24,38 @@ export function SearchBar({ onSearch }: SearchBarProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#666" style={styles.icon} />
+    <View className="px-4 py-3 bg-gray-900 border-b border-gray-800">
+      <View className="flex-row items-center bg-gray-800 rounded-xl px-4 py-2.5">
+        <Ionicons 
+          name="search" 
+          size={20} 
+          color="#9ca3af"
+          className="mr-2" 
+        />
         <TextInput
-          style={styles.input}
+          className="flex-1 text-base text-gray-100"
           placeholder="Search images..."
           value={searchText}
           onChangeText={setSearchText}
-          placeholderTextColor="#666"
+          placeholderTextColor="#9ca3af"
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
           onSubmitEditing={() => searchText.trim() && onSearch(searchText)}
         />
         {searchText.length > 0 && (
-          <TouchableOpacity onPress={handleClear}>
-            <Ionicons name="close-circle" size={20} color="#666" />
+          <TouchableOpacity 
+            onPress={handleClear}
+            className="p-1 -mr-1 active:opacity-70"
+          >
+            <Ionicons 
+              name="close-circle" 
+              size={20} 
+              color="#9ca3af"
+            />
           </TouchableOpacity>
         )}
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    paddingBottom: 8,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-    borderRadius: 10,
-    padding: 10,
-  },
-  icon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: "#000",
-    padding: 0,
-  },
-});

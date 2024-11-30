@@ -15,7 +15,7 @@ export default function FavoritesScreen() {
   );
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView className="flex-1 bg-gray-900">
       <ImageGrid
         images={favorites}
         isLoading={isLoading}

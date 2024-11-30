@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import {
-  StyleSheet,
   FlatList,
   Image,
   TouchableOpacity,
@@ -15,8 +14,6 @@ import { Image as ImageType } from "@/hooks/useImages";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
-
-const ITEM_SPACING = 8;
 
 interface ImageGridProps {
   images: ImageType[];
@@ -33,7 +30,7 @@ export function ImageGrid({
 }: ImageGridProps) {
   const { width } = useWindowDimensions();
   const numColumns = width > 768 ? 3 : 2;
-  const ITEM_WIDTH = (width - (numColumns + 1) * ITEM_SPACING) / numColumns;
+  const ITEM_WIDTH = width / numColumns;
 
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
   const { toggleFavorite, isFavorite, refreshFavorites } = useFavorites();
@@ -53,32 +50,38 @@ export function ImageGrid({
 
   const renderItem = useCallback(
     ({ item: image }: { item: ImageType }) => (
-      <View style={[styles.imageContainer, { width: ITEM_WIDTH }]}>
-        <TouchableOpacity
-          style={[styles.imageWrapper, { height: ITEM_WIDTH }]}
-          onPress={() => setSelectedImage(image)}
-        >
-          <Image
-            source={{ uri: image.uri }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+      <View className="p-1" style={{ width: ITEM_WIDTH }}>
+        <View className="bg-gray-900 rounded-xl overflow-hidden">
           <TouchableOpacity
-            style={styles.favoriteButton}
-            onPress={() => handleFavoritePress(image)}
+            className="relative aspect-square"
+            onPress={() => setSelectedImage(image)}
+            activeOpacity={0.9}
           >
-            <Ionicons
-              name={isFavorite(image.id) ? "heart" : "heart-outline"}
-              size={24}
-              color={isFavorite(image.id) ? "#ff4b4b" : "white"}
+            <Image
+              source={{ uri: image.uri }}
+              className="w-full h-full"
+              resizeMode="cover"
             />
+            <TouchableOpacity
+              className="absolute top-2 right-2 bg-black/50 backdrop-blur-md rounded-full p-2.5"
+              onPress={() => handleFavoritePress(image)}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={isFavorite(image.id) ? "heart" : "heart-outline"}
+                size={20}
+                color={isFavorite(image.id) ? "#ff4b4b" : "white"}
+              />
+            </TouchableOpacity>
           </TouchableOpacity>
-        </TouchableOpacity>
-        {image.photographer && (
-          <ThemedText style={styles.photographerName} numberOfLines={1}>
-            {image.photographer}
-          </ThemedText>
-        )}
+          {image.photographer && (
+            <View className="px-2 py-2 bg-gray-800/90">
+              <ThemedText className="text-xs text-center text-gray-300 font-medium truncate">
+                {image.photographer}
+              </ThemedText>
+            </View>
+          )}
+        </View>
       </View>
     ),
     [ITEM_WIDTH, handleFavoritePress, isFavorite]
@@ -86,16 +89,16 @@ export function ImageGrid({
 
   if (isLoading && images.length === 0) {
     return (
-      <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+      <ThemedView className="flex-1 justify-center items-center bg-gray-900">
+        <ActivityIndicator size="large" color="#fff" className="opacity-80" />
       </ThemedView>
     );
   }
 
   if (images.length === 0 && !isLoading) {
     return (
-      <ThemedView style={styles.emptyContainer}>
-        <ThemedText style={styles.emptyText}>
+      <ThemedView className="flex-1 justify-center items-center px-8 bg-gray-900">
+        <ThemedText className="text-base text-center text-gray-400">
           {isFavoritesScreen
             ? "No favorite images yet. Try adding some from the gallery!"
             : "No images found"}
@@ -105,20 +108,27 @@ export function ImageGrid({
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView className="flex-1 bg-gray-900">
       <FlatList
         data={images}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
-        contentContainerStyle={styles.gridContainer}
+        className="px-0.5"
         onEndReached={onLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           isLoading ? (
-            <ActivityIndicator style={styles.footer} size="large" />
+            <View className="py-6">
+              <ActivityIndicator
+                size="large"
+                color="#fff"
+                className="opacity-70"
+              />
+            </View>
           ) : null
         }
+        showsVerticalScrollIndicator={false}
       />
 
       <ImageModal
@@ -129,55 +139,3 @@ export function ImageGrid({
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gridContainer: {
-    padding: ITEM_SPACING,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: "center",
-  },
-  imageContainer: {
-    padding: ITEM_SPACING / 2,
-  },
-  imageWrapper: {
-    borderRadius: 12,
-    overflow: "hidden",
-    position: "relative",
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  favoriteButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 20,
-    padding: 8,
-  },
-  photographerName: {
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: "center",
-  },
-  footer: {
-    padding: 20,
-  },
-});
